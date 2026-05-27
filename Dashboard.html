@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <base target="_top">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <?!= include('Style'); ?>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+
+  <div class="header">
+
+    <div>
+
+      <h1>
+        សាមគ្គីទាន់ចិត្ត បោកអ៊ុត
+      </h1>
+
+      <div class="sub-title">
+        Laundry Operations & Management v6
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- FILTER -->
+
+  <div class="filters">
+
+    <input type="date" id="startDate">
+
+    <input type="date" id="endDate">
+
+    <select id="statusFilter">
+
+      <option value="All">All</option>
+      <option value="Paid">Paid</option>
+      <option value="Unpaid">Unpaid</option>
+      <option value="Pending">Pending</option>
+
+    </select>
+
+    <button onclick="loadDashboard()">
+      Filter
+    </button>
+
+  </div>
+
+  <!-- TABS -->
+
+  <div class="tabs">
+
+    <button
+      class="tab-btn active"
+      id="dailyBtn"
+      onclick="showTab('daily')"
+    >
+      Daily Operations
+    </button>
+
+    <button
+      class="tab-btn"
+      id="managementBtn"
+      onclick="showTab('management')"
+    >
+      Management Analytics
+    </button>
+
+  </div>
+
+  <!-- DAILY -->
+
+  <div id="dailyTab">
+
+    <!-- KPI -->
+
+    <div class="cards">
+
+      <div class="card">
+        <h3>Total Revenue</h3>
+        <p id="totalRevenue">៛0</p>
+      </div>
+
+      <div class="card">
+        <h3>Total Debt</h3>
+        <p id="totalDebt">៛0</p>
+      </div>
+
+      <div class="card">
+        <h3>Paid Amount</h3>
+        <p id="paidAmount">៛0</p>
+      </div>
+
+      <div class="card">
+        <h3>Total Orders</h3>
+        <p id="totalOrders">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Total Qty</h3>
+        <p id="totalQty">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Active Shops</h3>
+        <p id="activeShops">0</p>
+      </div>
+
+    </div>
+
+    <!-- ALERT -->
+
+    <div class="alert-grid">
+
+      <div class="alert-card red">
+
+        <div class="alert-title">
+          Holding > 5 Days
+        </div>
+
+        <div
+          class="alert-number"
+          id="holdingAlert"
+        >
+          0
+        </div>
+
+      </div>
+
+      <div class="alert-card orange">
+
+        <div class="alert-title">
+          Unpaid > 7 Days
+        </div>
+
+        <div
+          class="alert-number"
+          id="debtAlert"
+        >
+          0
+        </div>
+
+      </div>
+
+      <div class="alert-card green">
+
+        <div class="alert-title">
+          Avg Laundry Time
+        </div>
+
+        <div
+          class="alert-number"
+          id="avgLaundryTime"
+        >
+          0
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- OVERDUE -->
+
+    <div class="table-card">
+
+      <h3>
+        🚨 Overdue Laundry Queue
+      </h3>
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Date</th>
+            <th>Shop</th>
+            <th>Driver</th>
+            <th>Qty</th>
+            <th>Holding</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="overdueTable"></tbody>
+
+      </table>
+
+    </div>
+
+    <!-- UNPAID -->
+
+    <div class="table-card">
+
+      <h3>
+        💰 Unpaid Invoice Queue
+      </h3>
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Invoice</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>Debt Days</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="unpaidTable"></tbody>
+
+      </table>
+
+    </div>
+
+    <!-- LATEST -->
+
+    <div class="table-card">
+
+      <h3>
+        📦 Latest Orders
+      </h3>
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Date</th>
+            <th>Shop</th>
+            <th>Driver</th>
+            <th>Qty</th>
+            <th>Amount</th>
+            <th>Status</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="latestOrders"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+  <!-- MANAGEMENT -->
+
+  <div
+    id="managementTab"
+    style="display:none;"
+  >
+
+    <!-- CHART -->
+
+    <div class="chart-card">
+
+      <h3>
+        📈 Revenue Trend
+      </h3>
+
+      <canvas id="revenueChart"></canvas>
+
+    </div>
+
+    <!-- DRIVER -->
+
+    <div class="table-card">
+
+      <h3>
+        🚚 Driver Performance
+      </h3>
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Driver</th>
+            <th>Trips</th>
+            <th>Revenue</th>
+            <th>Qty</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="driverTable"></tbody>
+
+      </table>
+
+    </div>
+
+    <!-- CUSTOMER -->
+
+    <div class="table-card">
+
+      <h3>
+        👥 Top Customers
+      </h3>
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Customer</th>
+            <th>Revenue</th>
+            <th>Qty</th>
+            <th>Stain Qty</th>
+            <th>Stain %</th>
+            <th>Lifetime</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="customerTable"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+let revenueChart;
+
+
+// TAB
+
+function showTab(tab){
+
+  document.getElementById("dailyTab")
+    .style.display =
+      tab == "daily"
+        ? "block"
+        : "none";
+
+  document.getElementById("managementTab")
+    .style.display =
+      tab == "management"
+        ? "block"
+        : "none";
+
+  document.getElementById("dailyBtn")
+    .classList.remove("active");
+
+  document.getElementById("managementBtn")
+    .classList.remove("active");
+
+  if(tab == "daily"){
+
+    document.getElementById("dailyBtn")
+      .classList.add("active");
+
+  } else {
+
+    document.getElementById("managementBtn")
+      .classList.add("active");
+
+  }
+
+}
+
+
+// MONEY
+
+function money(x){
+
+  return "៛" +
+    Number(x || 0)
+      .toLocaleString();
+
+}
+
+
+// LOAD
+
+function loadDashboard(){
+
+  const startDate =
+    document.getElementById("startDate").value;
+
+  const endDate =
+    document.getElementById("endDate").value;
+
+  const statusFilter =
+    document.getElementById("statusFilter").value;
+
+  google.script.run
+
+    .withSuccessHandler(renderDashboard)
+
+    .getDashboardData(
+      startDate,
+      endDate,
+      statusFilter
+    );
+
+}
+
+
+// RENDER
+
+function renderDashboard(data){
+
+  document.getElementById("totalRevenue")
+    .innerText =
+      money(data.totalRevenue);
+
+  document.getElementById("totalDebt")
+    .innerText =
+      money(data.totalDebt);
+
+  document.getElementById("paidAmount")
+    .innerText =
+      money(data.paidAmount);
+
+  document.getElementById("totalOrders")
+    .innerText =
+      data.totalOrders;
+
+  document.getElementById("totalQty")
+    .innerText =
+      data.totalQty;
+
+  document.getElementById("activeShops")
+    .innerText =
+      data.activeShops;
+
+  document.getElementById("holdingAlert")
+    .innerText =
+      data.holdingAlert;
+
+  document.getElementById("debtAlert")
+    .innerText =
+      data.debtAlert;
+
+  document.getElementById("avgLaundryTime")
+    .innerText =
+      data.avgLaundryTime + " Days";
+
+  renderChart(data.revenueByDate);
+
+  renderDrivers(data.topDrivers);
+
+  renderCustomers(data.topCustomers);
+
+  renderLatest(data.latestOrders);
+
+  renderOverdue(data.overdueOrders);
+
+  renderUnpaid(data.unpaidInvoices);
+
+}
+
+
+// CHART
+
+function renderChart(data){
+
+  if(revenueChart){
+    revenueChart.destroy();
+  }
+
+  revenueChart = new Chart(
+
+    document.getElementById("revenueChart"),
+
+    {
+
+      type:"line",
+
+      data:{
+
+        labels:Object.keys(data),
+
+        datasets:[{
+
+          label:"Revenue",
+
+          data:Object.values(data),
+
+          tension:0.3
+
+        }]
+
+      }
+
+    }
+
+  );
+
+}
+
+
+// DRIVERS
+
+function renderDrivers(data){
+
+  let html = "";
+
+  data.forEach(r => {
+
+    html += `
+
+      <tr>
+
+        <td>${r[0]}</td>
+
+        <td>${r[1].totalTrips}</td>
+
+        <td>${money(r[1].revenue)}</td>
+
+        <td>${r[1].qty}</td>
+
+      </tr>
+
+    `;
+
+  });
+
+  document.getElementById("driverTable")
+    .innerHTML = html;
+
+}
+
+
+// CUSTOMERS
+
+function renderCustomers(data){
+
+  let html = "";
+
+  data.forEach(r => {
+
+    html += `
+
+      <tr>
+
+        <td>${r.name}</td>
+
+        <td>${money(r.revenue)}</td>
+
+        <td>${r.qty}</td>
+
+        <td>${r.stainQty}</td>
+
+        <td>${r.stainPercent}%</td>
+
+        <td>${r.customerAge}</td>
+
+      </tr>
+
+    `;
+
+  });
+
+  document.getElementById("customerTable")
+    .innerHTML = html;
+
+}
+
+
+// LATEST
+
+function renderLatest(data){
+
+  let html = "";
+
+  data.forEach(r => {
+
+    html += `
+
+      <tr>
+
+        <td>${r.date}</td>
+
+        <td>${r.shop}</td>
+
+        <td>${r.driver}</td>
+
+        <td>${r.qty}</td>
+
+        <td>${money(r.amount)}</td>
+
+        <td>${r.status}</td>
+
+      </tr>
+
+    `;
+
+  });
+
+  document.getElementById("latestOrders")
+    .innerHTML = html;
+
+}
+
+
+// OVERDUE
+
+function renderOverdue(data){
+
+  let html = "";
+
+  data.forEach(r => {
+
+    html += `
+
+      <tr>
+
+        <td>${r.orderDate}</td>
+
+        <td>${r.shop}</td>
+
+        <td>${r.driver}</td>
+
+        <td>${r.qty}</td>
+
+        <td>${r.holdingDays} Days</td>
+
+      </tr>
+
+    `;
+
+  });
+
+  document.getElementById("overdueTable")
+    .innerHTML = html;
+
+}
+
+
+// UNPAID
+
+function renderUnpaid(data){
+
+  let html = "";
+
+  data.forEach(r => {
+
+    html += `
+
+      <tr>
+
+        <td>${r.invoiceID}</td>
+
+        <td>${r.customer}</td>
+
+        <td>${money(r.amount)}</td>
+
+        <td>${r.debtDays} Days</td>
+
+      </tr>
+
+    `;
+
+  });
+
+  document.getElementById("unpaidTable")
+    .innerHTML = html;
+
+}
+
+
+// AUTO LOAD
+
+loadDashboard();
+
+</script>
+
+</body>
+</html>
