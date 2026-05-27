@@ -1,4 +1,5 @@
 const SHEET_ORDER = "Order";
+const SHEET_CUSTOMER = "Customer_Summary";
 
 
 // =========================================
@@ -65,7 +66,7 @@ function formatCustomerAge(firstDate){
 
 
 // =========================================
-// GET DASHBOARD DATA
+// DASHBOARD DATA
 // =========================================
 function getDashboardData(
   startDate,
@@ -76,31 +77,81 @@ function getDashboardData(
   const ss =
     SpreadsheetApp.getActive();
 
-  const sheet =
+  // =====================================
+  // ORDER SHEET
+  // =====================================
+
+  const orderSheet =
     ss.getSheetByName(SHEET_ORDER);
 
-  const allData =
-    sheet.getDataRange().getValues();
+  const orderData =
+    orderSheet
+      .getDataRange()
+      .getValues();
 
-  const rawHeaders =
-    allData[0];
-
-  // IMPORTANT
-  // AUTO REMOVE SPACE
-  const headers =
-    rawHeaders.map(h =>
+  const orderHeaders =
+    orderData[0].map(h =>
       String(h).trim()
     );
 
-  const data =
-    allData.slice(1);
+  const orders =
+    orderData.slice(1);
 
   // =====================================
-  // COLUMN INDEX
+  // CUSTOMER SUMMARY
+  // =====================================
+
+  const customerSheet =
+    ss.getSheetByName(
+      SHEET_CUSTOMER
+    );
+
+  const customerData =
+    customerSheet
+      .getDataRange()
+      .getValues();
+
+  const customerHeaders =
+    customerData[0];
+
+  const customerRows =
+    customerData.slice(1);
+
+  const customerMapInfo = {};
+
+  const ccol = name =>
+    customerHeaders.indexOf(name);
+
+  customerRows.forEach(r => {
+
+    const customer =
+      String(
+        r[ccol("Customer")] || ""
+      ).trim();
+
+    if(!customer) return;
+
+    customerMapInfo[customer] = {
+
+      area:
+        r[ccol("Area")] || "Unknown",
+
+      address:
+        r[ccol("Address")] || "",
+
+      type:
+        r[ccol("Customer Type")] || "General"
+
+    };
+
+  });
+
+  // =====================================
+  // COLUMN
   // =====================================
 
   const col = name =>
-    headers.indexOf(name);
+    orderHeaders.indexOf(name);
 
   const orderDateCol =
     col("Date");
@@ -120,11 +171,20 @@ function getDashboardData(
   const revenueCol =
     col("Grand Total");
 
-  const invoiceIDCol =
+  const stainCostCol =
+    col("Total Stain Cost");
+
+  const deliveryCol =
+    col("Delivery Charge");
+
+  const invoiceCol =
     col("Invoice ID");
 
   const invoiceDateCol =
     col("Invoice Date");
+
+  const driverOutCol =
+    col("Driver Out");
 
   const paidCol =
     col("Amount Paid");
@@ -132,14 +192,8 @@ function getDashboardData(
   const statusCol =
     col("Payment Status");
 
-  const remainingCol =
+  const remainCol =
     col("Remaining Bal");
-
-  // =====================================
-  // DEBUG
-  // =====================================
-
-  Logger.log(headers);
 
   // =====================================
   // KPI
@@ -150,21 +204,21 @@ function getDashboardData(
   let totalOrders = 0;
   let totalQty = 0;
   let paidAmount = 0;
-
-  let customerMap = {};
-  let revenueByDate = {};
-  let driverMap = {};
-
-  let latestOrders = [];
-
-  let overdueOrders = [];
-  let unpaidInvoices = [];
+  let netProfit = 0;
 
   let holdingAlert = 0;
   let debtAlert = 0;
 
   let totalLaundryDays = 0;
   let completedLaundry = 0;
+
+  let customerMap = {};
+  let revenueByDate = {};
+  let driverMap = {};
+  let areaMap = {};
+
+  let latestOrders = [];
+  let unpaidInvoices = [];
 
   let start =
     startDate
@@ -180,32 +234,42 @@ function getDashboardData(
   // LOOP
   // =====================================
 
-  data.forEach(r => {
+  orders.forEach(r => {
 
-    if (!r[0]) return;
+    if(!r[0]) return;
 
     const orderDate =
       new Date(r[orderDateCol]);
 
-    if (isNaN(orderDate)) return;
+    if(isNaN(orderDate)) return;
 
-    if (start && orderDate < start) return;
+    if(start && orderDate < start) return;
 
-    if (end && orderDate > end) return;
-
-    const invoiceID =
-      r[invoiceIDCol];
-
-    const invoiceDate =
-      r[invoiceDateCol]
-        ? new Date(r[invoiceDateCol])
-        : null;
+    if(end && orderDate > end) return;
 
     const customer =
-      String(r[customerCol] || "").trim();
+      String(
+        r[customerCol] || ""
+      ).trim();
+
+    const customerInfo =
+      customerMapInfo[customer] || {};
+
+    const area =
+      customerInfo.area || "Unknown";
+
+    const customerType =
+      customerInfo.type || "General";
 
     const driver =
-      String(r[driverCol] || "").trim();
+      String(
+        r[driverCol] || ""
+      ).trim();
+
+    const driverOut =
+      String(
+        r[driverOutCol] || ""
+      ).trim();
 
     const qty =
       Number(r[qtyCol]) || 0;
@@ -216,30 +280,67 @@ function getDashboardData(
     const revenue =
       Number(r[revenueCol]) || 0;
 
+    const stainCost =
+      Number(r[stainCostCol]) || 0;
+
+    const deliveryCost =
+      Number(r[deliveryCol]) || 0;
+
     const paid =
       Number(r[paidCol]) || 0;
 
     const status =
-      String(r[statusCol] || "").trim();
+      String(
+        r[statusCol] || ""
+      ).trim();
 
     const remaining =
-      Number(r[remainingCol]) || 0;
+      Number(r[remainCol]) || 0;
 
-    // KPI
+    const invoiceID =
+      r[invoiceCol];
+
+    const invoiceDate =
+      r[invoiceDateCol]
+        ? new Date(r[invoiceDateCol])
+        : null;
+
+    // =====================================
+    // PROFIT
+    // =====================================
+
+    const profit =
+      revenue
+      - stainCost
+      - deliveryCost;
+
+    netProfit += profit;
+
+    // =====================================
+    // TOTAL
+    // =====================================
+
     totalRevenue += revenue;
     totalDebt += remaining;
     totalQty += qty;
     totalOrders++;
     paidAmount += paid;
 
+    // =====================================
     // CUSTOMER
+    // =====================================
+
     if(!customerMap[customer]){
 
       customerMap[customer] = {
 
         revenue:0,
+        profit:0,
         qty:0,
         stainQty:0,
+        orders:0,
+        type:customerType,
+        area:area,
         firstDate:orderDate
 
       };
@@ -247,20 +348,69 @@ function getDashboardData(
     }
 
     customerMap[customer].revenue += revenue;
+    customerMap[customer].profit += profit;
     customerMap[customer].qty += qty;
     customerMap[customer].stainQty += stainQty;
+    customerMap[customer].orders++;
 
-    if(
-      orderDate <
-      customerMap[customer].firstDate
-    ){
+    // =====================================
+    // DRIVER
+    // =====================================
 
-      customerMap[customer].firstDate =
-        orderDate;
+    if(!driverMap[driver]){
+
+      driverMap[driver] = {
+
+        revenue:0,
+        qty:0,
+        trips:0,
+        profit:0
+
+      };
 
     }
 
+    driverMap[driver].revenue += revenue;
+    driverMap[driver].qty += qty;
+    driverMap[driver].trips++;
+    driverMap[driver].profit += profit;
+
+    // =====================================
+    // AREA
+    // =====================================
+
+    if(!areaMap[area]){
+
+      areaMap[area] = {
+
+        revenue:0,
+        qty:0,
+        profit:0,
+        shops:new Set(),
+        vip:0
+
+      };
+
+    }
+
+    areaMap[area].revenue += revenue;
+    areaMap[area].qty += qty;
+    areaMap[area].profit += profit;
+
+    areaMap[area]
+      .shops
+      .add(customer);
+
+    if(customerType == "VIP"){
+
+      areaMap[area].vip++;
+
+    }
+
+    // =====================================
     // REVENUE TREND
+    // =====================================
+
     const day =
       Utilities.formatDate(
         orderDate,
@@ -272,54 +422,30 @@ function getDashboardData(
       (revenueByDate[day] || 0)
       + revenue;
 
-    // DRIVER
-    if(!driverMap[driver]){
-
-      driverMap[driver] = {
-
-        revenue:0,
-        qty:0,
-        tripsIn:0,
-        tripsOut:0,
-        totalTrips:0
-
-      };
-
-    }
-
-    driverMap[driver].revenue += revenue;
-    driverMap[driver].qty += qty;
-    driverMap[driver].tripsIn++;
-    driverMap[driver].totalTrips++;
+    // =====================================
+    // AVG LAUNDRY
+    // =====================================
 
     if(invoiceDate){
 
-      driverMap[driver].tripsOut++;
-
-    }
-
-    // LAUNDRY TIME
-    let turnaroundDays = "";
-
-    if(invoiceDate){
-
-      turnaroundDays =
+      const days =
         Math.floor(
           (invoiceDate - orderDate)
           / (1000*60*60*24)
         );
 
-      totalLaundryDays += turnaroundDays;
+      totalLaundryDays += days;
       completedLaundry++;
 
     }
 
+    // =====================================
     // HOLDING
-    let holdingDays = "";
+    // =====================================
 
     if(!invoiceDate){
 
-      holdingDays =
+      const holdingDays =
         Math.floor(
           (new Date() - orderDate)
           / (1000*60*60*24)
@@ -331,37 +457,18 @@ function getDashboardData(
 
       }
 
-      if(holdingDays >= 3){
-
-        overdueOrders.push({
-
-          orderDate:
-            Utilities.formatDate(
-              orderDate,
-              Session.getScriptTimeZone(),
-              "yyyy-MM-dd"
-            ),
-
-          shop:customer,
-          driver:driver,
-          qty:qty,
-          holdingDays:holdingDays
-
-        });
-
-      }
-
     }
 
+    // =====================================
     // DEBT
-    let debtDays = "";
+    // =====================================
 
     if(
       invoiceDate &&
       status != "Paid"
     ){
 
-      debtDays =
+      const debtDays =
         Math.floor(
           (new Date() - invoiceDate)
           / (1000*60*60*24)
@@ -375,32 +482,38 @@ function getDashboardData(
 
       unpaidInvoices.push({
 
-        invoiceID:invoiceID,
-        customer:customer,
-        driver:driver,
+        invoiceID,
+        customer,
+        driverOut,
         amount:remaining,
-        debtDays:debtDays
+        debtDays
 
       });
 
     }
 
+    // =====================================
     // FILTER
+    // =====================================
+
     let include = true;
 
     if(statusFilter == "Paid"){
       include = status == "Paid";
     }
 
+    if(statusFilter == "Partial"){
+      include = status == "Partial";
+    }
+
     if(statusFilter == "Unpaid"){
-      include = status != "Paid";
+      include = status == "Unpaid";
     }
 
-    if(statusFilter == "Pending"){
-      include = !invoiceDate;
-    }
-
+    // =====================================
     // LATEST
+    // =====================================
+
     if(include){
 
       latestOrders.push({
@@ -416,10 +529,7 @@ function getDashboardData(
         driver:driver,
         qty:qty,
         amount:revenue,
-        status:status,
-        turnaroundDays,
-        holdingDays,
-        debtDays
+        status:status
 
       });
 
@@ -428,7 +538,7 @@ function getDashboardData(
   });
 
   // =====================================
-  // CUSTOMER ANALYTICS
+  // CUSTOMERS
   // =====================================
 
   const topCustomers =
@@ -437,29 +547,35 @@ function getDashboardData(
 
     .map(([name,data]) => {
 
-      const stainPercent =
-
-        data.qty > 0
-
-        ? (
-            data.stainQty
-            / data.qty
-          ) * 100
-
-        : 0;
-
       return {
 
         name:name,
 
         revenue:data.revenue,
 
+        profit:data.profit,
+
         qty:data.qty,
 
-        stainQty:data.stainQty,
+        avgQty:
+          (
+            data.qty
+            / data.orders
+          ).toFixed(0),
+
+        orders:data.orders,
+
+        type:data.type,
+
+        area:data.area,
 
         stainPercent:
-          stainPercent.toFixed(1),
+          (
+            (
+              data.stainQty
+              / data.qty
+            ) * 100
+          ).toFixed(1),
 
         customerAge:
           formatCustomerAge(
@@ -475,6 +591,53 @@ function getDashboardData(
     )
 
     .slice(0,20);
+
+  // =====================================
+  // AREA ANALYTICS
+  // =====================================
+
+  const topAreas =
+
+    Object.entries(areaMap)
+
+    .map(([name,data]) => {
+
+      let recommendation =
+        "Monitor";
+
+      if(
+        data.qty >= 5000
+      ){
+
+        recommendation =
+          "Open Mini Branch";
+
+      }
+
+      return {
+
+        area:name,
+
+        revenue:data.revenue,
+
+        qty:data.qty,
+
+        profit:data.profit,
+
+        shops:
+          data.shops.size,
+
+        vip:data.vip,
+
+        recommendation
+
+      };
+
+    })
+
+    .sort((a,b)=>
+      b.revenue - a.revenue
+    );
 
   // =====================================
   // AVG
@@ -502,6 +665,7 @@ function getDashboardData(
     totalOrders,
     totalQty,
     paidAmount,
+    netProfit,
 
     activeShops:
       Object.keys(customerMap).length,
@@ -510,32 +674,24 @@ function getDashboardData(
     debtAlert,
     avgLaundryTime,
 
+    revenueByDate,
+
     topCustomers,
 
     topDrivers:
       Object.entries(driverMap)
-
       .sort((a,b)=>
         b[1].revenue
         - a[1].revenue
       )
-
       .slice(0,20),
 
-    revenueByDate,
+    topAreas,
 
     latestOrders:
       latestOrders
         .slice(-30)
         .reverse(),
-
-    overdueOrders:
-      overdueOrders
-        .sort((a,b)=>
-          b.holdingDays
-          - a.holdingDays
-        )
-        .slice(0,20),
 
     unpaidInvoices:
       unpaidInvoices

@@ -15,7 +15,9 @@
 
 <div class="container">
 
-  <!-- HEADER -->
+  <!-- =====================================
+       HEADER
+  ====================================== -->
 
   <div class="header">
 
@@ -26,27 +28,46 @@
       </h1>
 
       <div class="sub-title">
-        Laundry Operations & Management v6
+        Smart Laundry Analytics v8
       </div>
 
     </div>
 
   </div>
 
-  <!-- FILTER -->
+  <!-- =====================================
+       FILTER
+  ====================================== -->
 
   <div class="filters">
 
-    <input type="date" id="startDate">
+    <input
+      type="date"
+      id="startDate"
+    >
 
-    <input type="date" id="endDate">
+    <input
+      type="date"
+      id="endDate"
+    >
 
     <select id="statusFilter">
 
-      <option value="All">All</option>
-      <option value="Paid">Paid</option>
-      <option value="Unpaid">Unpaid</option>
-      <option value="Pending">Pending</option>
+      <option value="All">
+        All Status
+      </option>
+
+      <option value="Paid">
+        Paid
+      </option>
+
+      <option value="Partial">
+        Partial
+      </option>
+
+      <option value="Unpaid">
+        Unpaid
+      </option>
 
     </select>
 
@@ -56,29 +77,33 @@
 
   </div>
 
-  <!-- TABS -->
+  <!-- =====================================
+       TAB
+  ====================================== -->
 
   <div class="tabs">
 
     <button
       class="tab-btn active"
-      id="dailyBtn"
       onclick="showTab('daily')"
+      id="dailyBtn"
     >
       Daily Operations
     </button>
 
     <button
       class="tab-btn"
-      id="managementBtn"
       onclick="showTab('management')"
+      id="managementBtn"
     >
       Management Analytics
     </button>
 
   </div>
 
-  <!-- DAILY -->
+  <!-- =====================================
+       DAILY TAB
+  ====================================== -->
 
   <div id="dailyTab">
 
@@ -89,6 +114,11 @@
       <div class="card">
         <h3>Total Revenue</h3>
         <p id="totalRevenue">៛0</p>
+      </div>
+
+      <div class="card">
+        <h3>Net Profit</h3>
+        <p id="netProfit">៛0</p>
       </div>
 
       <div class="card">
@@ -169,37 +199,9 @@
 
     </div>
 
-    <!-- OVERDUE -->
-
-    <div class="table-card">
-
-      <h3>
-        🚨 Overdue Laundry Queue
-      </h3>
-
-      <table>
-
-        <thead>
-
-          <tr>
-
-            <th>Date</th>
-            <th>Shop</th>
-            <th>Driver</th>
-            <th>Qty</th>
-            <th>Holding</th>
-
-          </tr>
-
-        </thead>
-
-        <tbody id="overdueTable"></tbody>
-
-      </table>
-
-    </div>
-
-    <!-- UNPAID -->
+    <!-- =====================================
+         UNPAID INVOICE
+    ====================================== -->
 
     <div class="table-card">
 
@@ -215,6 +217,7 @@
 
             <th>Invoice</th>
             <th>Customer</th>
+            <th>Driver Out</th>
             <th>Amount</th>
             <th>Debt Days</th>
 
@@ -228,7 +231,9 @@
 
     </div>
 
-    <!-- LATEST -->
+    <!-- =====================================
+         LATEST ORDERS
+    ====================================== -->
 
     <div class="table-card">
 
@@ -261,14 +266,16 @@
 
   </div>
 
-  <!-- MANAGEMENT -->
+  <!-- =====================================
+       MANAGEMENT TAB
+  ====================================== -->
 
   <div
     id="managementTab"
     style="display:none;"
   >
 
-    <!-- CHART -->
+    <!-- REVENUE CHART -->
 
     <div class="chart-card">
 
@@ -296,14 +303,47 @@
 
             <th>Driver</th>
             <th>Trips</th>
-            <th>Revenue</th>
             <th>Qty</th>
+            <th>Revenue</th>
+            <th>Profit</th>
 
           </tr>
 
         </thead>
 
         <tbody id="driverTable"></tbody>
+
+      </table>
+
+    </div>
+
+    <!-- AREA -->
+
+    <div class="table-card">
+
+      <h3>
+        📍 Area Analytics & Expansion
+      </h3>
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Area</th>
+            <th>Revenue</th>
+            <th>Qty</th>
+            <th>Profit</th>
+            <th>Shops</th>
+            <th>VIP</th>
+            <th>Recommendation</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="areaTable"></tbody>
 
       </table>
 
@@ -324,11 +364,14 @@
           <tr>
 
             <th>Customer</th>
+            <th>Area</th>
+            <th>Type</th>
             <th>Revenue</th>
+            <th>Profit</th>
             <th>Qty</th>
-            <th>Stain Qty</th>
+            <th>Avg Qty</th>
+            <th>Orders</th>
             <th>Stain %</th>
-            <th>Lifetime</th>
 
           </tr>
 
@@ -349,36 +392,44 @@
 let revenueChart;
 
 
+// =====================================
 // TAB
+// =====================================
 
 function showTab(tab){
 
-  document.getElementById("dailyTab")
+  document
+    .getElementById("dailyTab")
     .style.display =
       tab == "daily"
         ? "block"
         : "none";
 
-  document.getElementById("managementTab")
+  document
+    .getElementById("managementTab")
     .style.display =
       tab == "management"
         ? "block"
         : "none";
 
-  document.getElementById("dailyBtn")
+  document
+    .getElementById("dailyBtn")
     .classList.remove("active");
 
-  document.getElementById("managementBtn")
+  document
+    .getElementById("managementBtn")
     .classList.remove("active");
 
   if(tab == "daily"){
 
-    document.getElementById("dailyBtn")
+    document
+      .getElementById("dailyBtn")
       .classList.add("active");
 
   } else {
 
-    document.getElementById("managementBtn")
+    document
+      .getElementById("managementBtn")
       .classList.add("active");
 
   }
@@ -386,7 +437,9 @@ function showTab(tab){
 }
 
 
+// =====================================
 // MONEY
+// =====================================
 
 function money(x){
 
@@ -397,22 +450,44 @@ function money(x){
 }
 
 
+// =====================================
+// NUMBER
+// =====================================
+
+function num(x){
+
+  return Number(x || 0)
+    .toLocaleString();
+
+}
+
+
+// =====================================
 // LOAD
+// =====================================
 
 function loadDashboard(){
 
   const startDate =
-    document.getElementById("startDate").value;
+    document
+      .getElementById("startDate")
+      .value;
 
   const endDate =
-    document.getElementById("endDate").value;
+    document
+      .getElementById("endDate")
+      .value;
 
   const statusFilter =
-    document.getElementById("statusFilter").value;
+    document
+      .getElementById("statusFilter")
+      .value;
 
   google.script.run
 
-    .withSuccessHandler(renderDashboard)
+    .withSuccessHandler(
+      renderDashboard
+    )
 
     .getDashboardData(
       startDate,
@@ -423,72 +498,107 @@ function loadDashboard(){
 }
 
 
+// =====================================
 // RENDER
+// =====================================
 
 function renderDashboard(data){
 
-  document.getElementById("totalRevenue")
-    .innerText =
-      money(data.totalRevenue);
+  document.getElementById(
+    "totalRevenue"
+  ).innerText =
+    money(data.totalRevenue);
 
-  document.getElementById("totalDebt")
-    .innerText =
-      money(data.totalDebt);
+  document.getElementById(
+    "netProfit"
+  ).innerText =
+    money(data.netProfit);
 
-  document.getElementById("paidAmount")
-    .innerText =
-      money(data.paidAmount);
+  document.getElementById(
+    "totalDebt"
+  ).innerText =
+    money(data.totalDebt);
 
-  document.getElementById("totalOrders")
-    .innerText =
-      data.totalOrders;
+  document.getElementById(
+    "paidAmount"
+  ).innerText =
+    money(data.paidAmount);
 
-  document.getElementById("totalQty")
-    .innerText =
-      data.totalQty;
+  document.getElementById(
+    "totalOrders"
+  ).innerText =
+    num(data.totalOrders);
 
-  document.getElementById("activeShops")
-    .innerText =
-      data.activeShops;
+  document.getElementById(
+    "totalQty"
+  ).innerText =
+    num(data.totalQty);
 
-  document.getElementById("holdingAlert")
-    .innerText =
-      data.holdingAlert;
+  document.getElementById(
+    "activeShops"
+  ).innerText =
+    num(data.activeShops);
 
-  document.getElementById("debtAlert")
-    .innerText =
-      data.debtAlert;
+  document.getElementById(
+    "holdingAlert"
+  ).innerText =
+    num(data.holdingAlert);
 
-  document.getElementById("avgLaundryTime")
-    .innerText =
-      data.avgLaundryTime + " Days";
+  document.getElementById(
+    "debtAlert"
+  ).innerText =
+    num(data.debtAlert);
 
-  renderChart(data.revenueByDate);
+  document.getElementById(
+    "avgLaundryTime"
+  ).innerText =
+    data.avgLaundryTime
+    + " Days";
 
-  renderDrivers(data.topDrivers);
+  renderRevenueChart(
+    data.revenueByDate
+  );
 
-  renderCustomers(data.topCustomers);
+  renderLatestOrders(
+    data.latestOrders
+  );
 
-  renderLatest(data.latestOrders);
+  renderDriverTable(
+    data.topDrivers
+  );
 
-  renderOverdue(data.overdueOrders);
+  renderCustomerTable(
+    data.topCustomers
+  );
 
-  renderUnpaid(data.unpaidInvoices);
+  renderAreaTable(
+    data.topAreas
+  );
+
+  renderUnpaidTable(
+    data.unpaidInvoices
+  );
 
 }
 
 
+// =====================================
 // CHART
+// =====================================
 
-function renderChart(data){
+function renderRevenueChart(data){
 
   if(revenueChart){
+
     revenueChart.destroy();
+
   }
 
   revenueChart = new Chart(
 
-    document.getElementById("revenueChart"),
+    document.getElementById(
+      "revenueChart"
+    ),
 
     {
 
@@ -496,13 +606,15 @@ function renderChart(data){
 
       data:{
 
-        labels:Object.keys(data),
+        labels:
+          Object.keys(data),
 
         datasets:[{
 
           label:"Revenue",
 
-          data:Object.values(data),
+          data:
+            Object.values(data),
 
           tension:0.3
 
@@ -517,13 +629,15 @@ function renderChart(data){
 }
 
 
-// DRIVERS
+// =====================================
+// DRIVER
+// =====================================
 
-function renderDrivers(data){
+function renderDriverTable(data){
 
   let html = "";
 
-  data.forEach(r => {
+  data.forEach(r=>{
 
     html += `
 
@@ -531,11 +645,13 @@ function renderDrivers(data){
 
         <td>${r[0]}</td>
 
-        <td>${r[1].totalTrips}</td>
+        <td>${num(r[1].trips)}</td>
+
+        <td>${num(r[1].qty)}</td>
 
         <td>${money(r[1].revenue)}</td>
 
-        <td>${r[1].qty}</td>
+        <td>${money(r[1].profit)}</td>
 
       </tr>
 
@@ -543,19 +659,27 @@ function renderDrivers(data){
 
   });
 
-  document.getElementById("driverTable")
+  document
+    .getElementById("driverTable")
     .innerHTML = html;
 
 }
 
 
-// CUSTOMERS
+// =====================================
+// CUSTOMER
+// =====================================
 
-function renderCustomers(data){
+function renderCustomerTable(data){
 
   let html = "";
 
-  data.forEach(r => {
+  data.forEach(r=>{
+
+    let typeClass =
+      r.type == "VIP"
+      ? "vip"
+      : "general";
 
     html += `
 
@@ -563,15 +687,23 @@ function renderCustomers(data){
 
         <td>${r.name}</td>
 
+        <td>${r.area}</td>
+
+        <td class="${typeClass}">
+          ${r.type}
+        </td>
+
         <td>${money(r.revenue)}</td>
 
-        <td>${r.qty}</td>
+        <td>${money(r.profit)}</td>
 
-        <td>${r.stainQty}</td>
+        <td>${num(r.qty)}</td>
+
+        <td>${num(r.avgQty)}</td>
+
+        <td>${num(r.orders)}</td>
 
         <td>${r.stainPercent}%</td>
-
-        <td>${r.customerAge}</td>
 
       </tr>
 
@@ -579,19 +711,120 @@ function renderCustomers(data){
 
   });
 
-  document.getElementById("customerTable")
+  document
+    .getElementById("customerTable")
     .innerHTML = html;
 
 }
 
 
-// LATEST
+// =====================================
+// AREA
+// =====================================
 
-function renderLatest(data){
+function renderAreaTable(data){
 
   let html = "";
 
-  data.forEach(r => {
+  data.forEach(r=>{
+
+    html += `
+
+      <tr>
+
+        <td>${r.area}</td>
+
+        <td>${money(r.revenue)}</td>
+
+        <td>${num(r.qty)}</td>
+
+        <td>${money(r.profit)}</td>
+
+        <td>${num(r.shops)}</td>
+
+        <td>${num(r.vip)}</td>
+
+        <td>
+          ${r.recommendation}
+        </td>
+
+      </tr>
+
+    `;
+
+  });
+
+  document
+    .getElementById("areaTable")
+    .innerHTML = html;
+
+}
+
+
+// =====================================
+// UNPAID
+// =====================================
+
+function renderUnpaidTable(data){
+
+  let html = "";
+
+  data.forEach(r=>{
+
+    html += `
+
+      <tr>
+
+        <td>${r.invoiceID}</td>
+
+        <td>${r.customer}</td>
+
+        <td>${r.driverOut}</td>
+
+        <td>${money(r.amount)}</td>
+
+        <td>${num(r.debtDays)} Days</td>
+
+      </tr>
+
+    `;
+
+  });
+
+  document
+    .getElementById("unpaidTable")
+    .innerHTML = html;
+
+}
+
+
+// =====================================
+// LATEST
+// =====================================
+
+function renderLatestOrders(data){
+
+  let html = "";
+
+  data.forEach(r=>{
+
+    let cls = "";
+
+    if(r.status == "Paid"){
+
+      cls = "status-paid";
+
+    }
+    else if(r.status == "Partial"){
+
+      cls = "status-partial";
+
+    }
+    else{
+
+      cls = "status-unpaid";
+
+    }
 
     html += `
 
@@ -603,11 +836,13 @@ function renderLatest(data){
 
         <td>${r.driver}</td>
 
-        <td>${r.qty}</td>
+        <td>${num(r.qty)}</td>
 
         <td>${money(r.amount)}</td>
 
-        <td>${r.status}</td>
+        <td class="${cls}">
+          ${r.status}
+        </td>
 
       </tr>
 
@@ -615,79 +850,16 @@ function renderLatest(data){
 
   });
 
-  document.getElementById("latestOrders")
+  document
+    .getElementById("latestOrders")
     .innerHTML = html;
 
 }
 
 
-// OVERDUE
-
-function renderOverdue(data){
-
-  let html = "";
-
-  data.forEach(r => {
-
-    html += `
-
-      <tr>
-
-        <td>${r.orderDate}</td>
-
-        <td>${r.shop}</td>
-
-        <td>${r.driver}</td>
-
-        <td>${r.qty}</td>
-
-        <td>${r.holdingDays} Days</td>
-
-      </tr>
-
-    `;
-
-  });
-
-  document.getElementById("overdueTable")
-    .innerHTML = html;
-
-}
-
-
-// UNPAID
-
-function renderUnpaid(data){
-
-  let html = "";
-
-  data.forEach(r => {
-
-    html += `
-
-      <tr>
-
-        <td>${r.invoiceID}</td>
-
-        <td>${r.customer}</td>
-
-        <td>${money(r.amount)}</td>
-
-        <td>${r.debtDays} Days</td>
-
-      </tr>
-
-    `;
-
-  });
-
-  document.getElementById("unpaidTable")
-    .innerHTML = html;
-
-}
-
-
+// =====================================
 // AUTO LOAD
+// =====================================
 
 loadDashboard();
 
