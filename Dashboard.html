@@ -5,6 +5,8 @@
 
   <base target="_top">
 
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <?!= include('Style'); ?>
@@ -13,52 +15,50 @@
 
 <body>
 
-<div class="container">
+<!-- LOADING -->
 
-  <!-- =====================================
-       HEADER
-  ====================================== -->
+<div id="loadingOverlay" class="loading-overlay">
 
-  <div class="header">
+  <div class="loading-box">
 
-    <div>
+    <div class="spinner"></div>
 
-      <h1>
-        សាមគ្គីទាន់ចិត្ត បោកអ៊ុត
-      </h1>
-
-      <div class="sub-title">
-        Smart Laundry Analytics v8
-      </div>
-
+    <div class="loading-text">
+      Loading data...
     </div>
 
   </div>
 
-  <!-- =====================================
-       FILTER
-  ====================================== -->
+</div>
+
+<div class="container">
+
+  <!-- HEADER -->
+
+  <div class="header">
+
+    <h1>
+      សាមគ្គីទាន់ចិត្ត បោកអ៊ុត
+    </h1>
+
+    <div class="sub-title">
+      Smart Laundry Analytics v10
+    </div>
+
+  </div>
+
+  <!-- FILTER -->
 
   <div class="filters">
 
-    <input
-      type="date"
-      id="startDate"
-    >
+    <input type="date" id="startDate">
 
-    <input
-      type="date"
-      id="endDate"
-    >
+    <input type="date" id="endDate">
 
     <select id="statusFilter">
 
       <option value="All">
-        All Status
-      </option>
-
-      <option value="Paid">
-        Paid
+        Current Month
       </option>
 
       <option value="Partial">
@@ -77,77 +77,90 @@
 
   </div>
 
-  <!-- =====================================
-       TAB
-  ====================================== -->
+  <!-- TABS -->
 
   <div class="tabs">
 
     <button
       class="tab-btn active"
-      onclick="showTab('daily')"
       id="dailyBtn"
+      onclick="showTab('daily')"
     >
       Daily Operations
     </button>
 
     <button
       class="tab-btn"
-      onclick="showTab('management')"
       id="managementBtn"
+      onclick="showTab('management')"
     >
       Management Analytics
     </button>
 
   </div>
 
-  <!-- =====================================
-       DAILY TAB
-  ====================================== -->
+  <!-- DAILY TAB -->
 
   <div id="dailyTab">
 
     <!-- KPI -->
 
-    <div class="cards">
+<div class="cards">
 
-      <div class="card">
-        <h3>Total Revenue</h3>
-        <p id="totalRevenue">៛0</p>
-      </div>
+  <div class="card">
+    <h3>Forecast Revenue</h3>
+    <p id="totalRevenue">៛0</p>
 
-      <div class="card">
-        <h3>Net Profit</h3>
-        <p id="netProfit">៛0</p>
-      </div>
+    <small id="avgRevenuePerDay">
+      Avg/Day: ៛0
+    </small>
+  </div>
 
-      <div class="card">
-        <h3>Total Debt</h3>
-        <p id="totalDebt">៛0</p>
-      </div>
+  <div class="card">
+    <h3>Profit</h3>
+    <p id="netProfit">៛0</p>
+  </div>
 
-      <div class="card">
-        <h3>Paid Amount</h3>
-        <p id="paidAmount">៛0</p>
-      </div>
+  <div class="card">
+    <h3>Outstanding Debt</h3>
+    <p id="totalDebt">៛0</p>
+  </div>
 
-      <div class="card">
-        <h3>Total Orders</h3>
-        <p id="totalOrders">0</p>
-      </div>
+  <div class="card">
+    <h3>Total Paid</h3>
+    <p id="paidAmount">៛0</p>
+  </div>
 
-      <div class="card">
-        <h3>Total Qty</h3>
-        <p id="totalQty">0</p>
-      </div>
+  <div class="card">
+    <h3>All Adjustment</h3>
+    <p id="totalAdjustment">៛0</p>
+  </div>
 
-      <div class="card">
-        <h3>Active Shops</h3>
-        <p id="activeShops">0</p>
-      </div>
+  <div class="card">
+    <h3>Total Orders</h3>
+    <p id="totalOrders">0</p>
+  </div>
 
-    </div>
+  <div class="card">
+    <h3>Total Qty</h3>
+    <p id="totalQty">0</p>
 
+    <small id="avgQtyPerDay">
+      Avg/Day: 0
+    </small>
+  </div>
+
+  <div class="card">
+    <h3>Active Shops</h3>
+    <p id="activeShops">0</p>
+  </div>
+
+  <div class="card">
+    <h3>Total Shops</h3>
+    <p id="totalShops">0</p>
+  </div>
+
+</div>
     <!-- ALERT -->
 
     <div class="alert-grid">
@@ -155,7 +168,7 @@
       <div class="alert-card red">
 
         <div class="alert-title">
-          Holding > 5 Days
+          Holding > 3 Days
         </div>
 
         <div
@@ -170,7 +183,7 @@
       <div class="alert-card orange">
 
         <div class="alert-title">
-          Unpaid > 7 Days
+          Outstanding > 3 Days
         </div>
 
         <div
@@ -199,14 +212,12 @@
 
     </div>
 
-    <!-- =====================================
-         UNPAID INVOICE
-    ====================================== -->
+    <!-- UNPAID -->
 
     <div class="table-card">
 
       <h3>
-        💰 Unpaid Invoice Queue
+        💰 Outstanding Invoice Queue
       </h3>
 
       <table>
@@ -216,6 +227,7 @@
           <tr>
 
             <th>Invoice</th>
+            <th>Invoice Date</th>
             <th>Customer</th>
             <th>Driver Out</th>
             <th>Amount</th>
@@ -231,9 +243,7 @@
 
     </div>
 
-    <!-- =====================================
-         LATEST ORDERS
-    ====================================== -->
+    <!-- LATEST -->
 
     <div class="table-card">
 
@@ -266,21 +276,31 @@
 
   </div>
 
-  <!-- =====================================
-       MANAGEMENT TAB
-  ====================================== -->
+  <!-- MANAGEMENT TAB -->
 
   <div
     id="managementTab"
     style="display:none;"
   >
 
-    <!-- REVENUE CHART -->
+    <!-- SMART INSIGHT -->
+
+    <div class="table-card">
+
+      <h3>
+        🧠 Smart Business Intelligence
+      </h3>
+
+      <div id="smartInsights"></div>
+
+    </div>
+
+    <!-- CHART -->
 
     <div class="chart-card">
 
       <h3>
-        📈 Revenue Trend
+        📈 Forecast Revenue Trend
       </h3>
 
       <canvas id="revenueChart"></canvas>
@@ -302,7 +322,9 @@
           <tr>
 
             <th>Driver</th>
-            <th>Trips</th>
+            <th>Trips In</th>
+            <th>Trips Out</th>
+            <th>Total Trips</th>
             <th>Qty</th>
             <th>Revenue</th>
             <th>Profit</th>
@@ -322,7 +344,7 @@
     <div class="table-card">
 
       <h3>
-        📍 Area Analytics & Expansion
+        📍 Area Analytics
       </h3>
 
       <table>
@@ -369,9 +391,9 @@
             <th>Revenue</th>
             <th>Profit</th>
             <th>Qty</th>
-            <th>Avg Qty</th>
             <th>Orders</th>
             <th>Stain %</th>
+            <th>Risk</th>
 
           </tr>
 
@@ -391,68 +413,57 @@
 
 let revenueChart;
 
-
-// =====================================
+// ======================================
 // TAB
-// =====================================
+// ======================================
 
 function showTab(tab){
 
-  document
-    .getElementById("dailyTab")
+  document.getElementById("dailyTab")
     .style.display =
       tab == "daily"
-        ? "block"
-        : "none";
+      ? "block"
+      : "none";
 
-  document
-    .getElementById("managementTab")
+  document.getElementById("managementTab")
     .style.display =
       tab == "management"
-        ? "block"
-        : "none";
+      ? "block"
+      : "none";
 
-  document
-    .getElementById("dailyBtn")
+  document.getElementById("dailyBtn")
     .classList.remove("active");
 
-  document
-    .getElementById("managementBtn")
+  document.getElementById("managementBtn")
     .classList.remove("active");
 
   if(tab == "daily"){
 
-    document
-      .getElementById("dailyBtn")
+    document.getElementById("dailyBtn")
       .classList.add("active");
 
   } else {
 
-    document
-      .getElementById("managementBtn")
+    document.getElementById("managementBtn")
       .classList.add("active");
+
+    loadManagement();
 
   }
 
 }
 
-
-// =====================================
-// MONEY
-// =====================================
+// ======================================
+// FORMAT
+// ======================================
 
 function money(x){
 
   return "៛" +
     Number(x || 0)
-      .toLocaleString();
+    .toLocaleString();
 
 }
-
-
-// =====================================
-// NUMBER
-// =====================================
 
 function num(x){
 
@@ -461,33 +472,52 @@ function num(x){
 
 }
 
-
-// =====================================
-// LOAD
-// =====================================
+// ======================================
+// LOAD DASHBOARD
+// ======================================
 
 function loadDashboard(){
 
+  document.getElementById(
+    "loadingOverlay"
+  ).style.display = "flex";
+
   const startDate =
-    document
-      .getElementById("startDate")
-      .value;
+    document.getElementById(
+      "startDate"
+    ).value;
 
   const endDate =
-    document
-      .getElementById("endDate")
-      .value;
+    document.getElementById(
+      "endDate"
+    ).value;
 
   const statusFilter =
-    document
-      .getElementById("statusFilter")
-      .value;
+    document.getElementById(
+      "statusFilter"
+    ).value;
 
   google.script.run
 
-    .withSuccessHandler(
-      renderDashboard
-    )
+    .withSuccessHandler(function(data){
+
+      document.getElementById(
+        "loadingOverlay"
+      ).style.display = "none";
+
+      renderDashboard(data);
+
+    })
+
+    .withFailureHandler(function(err){
+
+      document.getElementById(
+        "loadingOverlay"
+      ).style.display = "none";
+
+      alert(err.message);
+
+    })
 
     .getDashboardData(
       startDate,
@@ -497,32 +527,93 @@ function loadDashboard(){
 
 }
 
+// ======================================
+// LOAD MANAGEMENT
+// ======================================
 
-// =====================================
-// RENDER
-// =====================================
+function loadManagement(){
+
+  document.getElementById(
+    "loadingOverlay"
+  ).style.display = "flex";
+
+  const startDate =
+    document.getElementById(
+      "startDate"
+    ).value;
+
+  const endDate =
+    document.getElementById(
+      "endDate"
+    ).value;
+
+  const statusFilter =
+    document.getElementById(
+      "statusFilter"
+    ).value;
+
+  google.script.run
+
+    .withSuccessHandler(function(data){
+
+      document.getElementById(
+        "loadingOverlay"
+      ).style.display = "none";
+
+      renderManagement(data);
+
+    })
+
+    .withFailureHandler(function(err){
+
+      document.getElementById(
+        "loadingOverlay"
+      ).style.display = "none";
+
+      alert(err.message);
+
+    })
+
+    .getManagementData(
+      startDate,
+      endDate,
+      statusFilter
+    );
+
+}
+
+// ======================================
+// RENDER DASHBOARD
+// ======================================
 
 function renderDashboard(data){
+
+  // KPI
 
   document.getElementById(
     "totalRevenue"
   ).innerText =
-    money(data.totalRevenue);
+    money(data.forecastRevenue);
 
   document.getElementById(
     "netProfit"
   ).innerText =
-    money(data.netProfit);
+    money(data.profit);
 
   document.getElementById(
     "totalDebt"
   ).innerText =
-    money(data.totalDebt);
+    money(data.outstandingDebt);
 
   document.getElementById(
     "paidAmount"
   ).innerText =
     money(data.paidAmount);
+
+  document.getElementById(
+    "totalAdjustment"
+  ).innerText =
+    money(data.totalAdjustment);
 
   document.getElementById(
     "totalOrders"
@@ -535,9 +626,26 @@ function renderDashboard(data){
     num(data.totalQty);
 
   document.getElementById(
+    "avgRevenuePerDay"
+  ).innerText =
+    "Avg/Day: " +
+    money(Math.floor(data.avgRevenuePerDay));
+
+  document.getElementById(
+    "avgQtyPerDay"
+  ).innerText =
+    "Avg/Day: " +
+    num(Math.floor(data.avgQtyPerDay));
+
+  document.getElementById(
     "activeShops"
   ).innerText =
     num(data.activeShops);
+  
+  document.getElementById(
+  "totalShops"
+).innerText =
+  num(data.totalShops);
 
   document.getElementById(
     "holdingAlert"
@@ -552,41 +660,293 @@ function renderDashboard(data){
   document.getElementById(
     "avgLaundryTime"
   ).innerText =
-    data.avgLaundryTime
-    + " Days";
+    data.avgLaundryTime +
+    " Days";
 
-  renderRevenueChart(
-    data.revenueByDate
+    // ======================================
+// AVG LAUNDRY TIME CARD COLOR
+// ======================================
+
+const laundryCard =
+  document.getElementById(
+    "avgLaundryTime"
+  ).closest(".alert-card");
+
+laundryCard.classList.remove(
+  "red",
+  "orange",
+  "green",
+  "blue"
+);
+
+const avgLaundry =
+  Number(data.avgLaundryTime);
+
+if(avgLaundry > 3){
+
+  laundryCard.classList.add("red");
+
+}
+else if(avgLaundry >= 2){
+
+  laundryCard.classList.add("orange");
+
+}
+else if(avgLaundry >= 1.5){
+
+  laundryCard.classList.add("blue");
+
+}
+else{
+
+  laundryCard.classList.add("green");
+
+}
+
+  // COLOR
+
+  const profitCard =
+    document.getElementById(
+      "netProfit"
+    ).closest(".card");
+
+  profitCard.classList.remove(
+    "red-card",
+    "green-card"
+  );
+
+  if(data.profit > 0){
+
+    profitCard.classList.add(
+      "green-card"
+    );
+
+  } else {
+
+    profitCard.classList.add(
+      "red-card"
+    );
+
+  }
+
+  const debtCard =
+    document.getElementById(
+      "totalDebt"
+    ).closest(".card");
+
+  debtCard.classList.remove(
+    "red-card",
+    "orange-card",
+    "green-card"
+  );
+
+  if(data.outstandingDebt >= 3000000){
+
+    debtCard.classList.add(
+      "red-card"
+    );
+
+  }
+  else if(data.outstandingDebt > 2000000){
+
+    debtCard.classList.add(
+      "orange-card"
+    );
+
+  }
+  else{
+
+    debtCard.classList.add(
+      "green-card"
+    );
+
+  }
+
+  // TABLE
+
+  renderUnpaidTable(
+    data.unpaidInvoices || []
   );
 
   renderLatestOrders(
-    data.latestOrders
-  );
-
-  renderDriverTable(
-    data.topDrivers
-  );
-
-  renderCustomerTable(
-    data.topCustomers
-  );
-
-  renderAreaTable(
-    data.topAreas
-  );
-
-  renderUnpaidTable(
-    data.unpaidInvoices
+    data.latestOrders || []
   );
 
 }
 
+// ======================================
+// UNPAID TABLE
+// ======================================
 
-// =====================================
+function renderUnpaidTable(rows){
+
+  const tbody =
+    document.getElementById(
+      "unpaidTable"
+    );
+
+  tbody.innerHTML = "";
+
+  if(rows.length == 0){
+
+    tbody.innerHTML = `
+
+      <tr>
+        <td colspan="6">
+          No data
+        </td>
+      </tr>
+
+    `;
+
+    return;
+
+  }
+
+  rows.forEach(r => {
+
+    tbody.innerHTML += `
+
+      <tr>
+
+        <td>${r.invoiceID || ""}</td>
+
+        <td>${r.invoiceDate || ""}</td>
+
+        <td>${r.customer || ""}</td>
+
+        <td>${r.driverOut || ""}</td>
+
+        <td>${money(r.amount)}</td>
+
+        <td>${r.debtDays || 0}</td>
+
+      </tr>
+
+    `;
+
+  });
+
+}
+
+// ======================================
+// LATEST ORDER
+// ======================================
+
+function renderLatestOrders(rows){
+
+  const tbody =
+    document.getElementById(
+      "latestOrders"
+    );
+
+  tbody.innerHTML = "";
+
+  if(rows.length == 0){
+
+    tbody.innerHTML = `
+
+      <tr>
+        <td colspan="6">
+          No data
+        </td>
+      </tr>
+
+    `;
+
+    return;
+
+  }
+
+  rows.forEach(r => {
+
+    let statusClass =
+      "status-unpaid";
+
+    if(r.status == "Paid"){
+
+      statusClass =
+        "status-paid";
+
+    }
+    else if(
+      r.status == "Partial"
+    ){
+
+      statusClass =
+        "status-partial";
+
+    }
+
+    tbody.innerHTML += `
+
+      <tr>
+
+        <td>${r.date || ""}</td>
+
+        <td>${r.shop || ""}</td>
+
+        <td>${r.driver || ""}</td>
+
+        <td>${num(r.qty)}</td>
+
+        <td>${money(r.amount)}</td>
+
+        <td class="${statusClass}">
+          ${r.status || ""}
+        </td>
+
+      </tr>
+
+    `;
+
+  });
+
+}
+
+// ======================================
+// MANAGEMENT
+// ======================================
+
+function renderManagement(data){
+
+  renderRevenueChart(
+    data.revenueByDate || {}
+  );
+
+  renderDrivers(
+    data.topDrivers || []
+  );
+
+  renderAreas(
+    data.topAreas || []
+  );
+
+  renderCustomers(
+    data.topCustomers || []
+  );
+
+  renderInsights(data);
+
+}
+
+
+// ======================================
 // CHART
-// =====================================
+// ======================================
 
 function renderRevenueChart(data){
+
+  const labels =
+    Object.keys(data);
+
+  const values =
+    Object.values(data);
+
+  const ctx =
+    document.getElementById(
+      "revenueChart"
+    );
 
   if(revenueChart){
 
@@ -594,58 +954,69 @@ function renderRevenueChart(data){
 
   }
 
-  revenueChart = new Chart(
+  revenueChart =
+    new Chart(ctx, {
 
-    document.getElementById(
-      "revenueChart"
-    ),
+      type: "line",
 
-    {
+      data: {
 
-      type:"line",
+        labels: labels,
 
-      data:{
+        datasets: [{
 
-        labels:
-          Object.keys(data),
+          label: "Revenue",
 
-        datasets:[{
+          data: values,
 
-          label:"Revenue",
+          borderWidth: 2,
 
-          data:
-            Object.values(data),
-
-          tension:0.3
+          tension: 0.3
 
         }]
 
+      },
+
+      options: {
+
+        responsive: true,
+
+        maintainAspectRatio: false
+
       }
 
-    }
-
-  );
+    });
 
 }
 
-
-// =====================================
+// ======================================
 // DRIVER
-// =====================================
+// ======================================
 
-function renderDriverTable(data){
+function renderDrivers(rows){
 
-  let html = "";
+  const tbody =
+    document.getElementById(
+      "driverTable"
+    );
 
-  data.forEach(r=>{
+  tbody.innerHTML = "";
 
-    html += `
+  rows.forEach(r => {
+
+    tbody.innerHTML += `
 
       <tr>
 
         <td>${r[0]}</td>
 
-        <td>${num(r[1].trips)}</td>
+        <td>${r[1].tripsIn}</td>
+
+        <td>${r[1].tripsOut}</td>
+
+        <td>
+          ${r[1].tripsIn + r[1].tripsOut}
+        </td>
 
         <td>${num(r[1].qty)}</td>
 
@@ -659,29 +1030,95 @@ function renderDriverTable(data){
 
   });
 
-  document
-    .getElementById("driverTable")
-    .innerHTML = html;
+}
+
+// ======================================
+// AREA
+// ======================================
+
+function renderAreas(rows){
+
+  const tbody =
+    document.getElementById(
+      "areaTable"
+    );
+
+  tbody.innerHTML = "";
+
+  rows.forEach(r => {
+
+    let recClass = "rec-monitor";
+
+    if(
+      r.recommendation ==
+      "Open Mini Branch"
+    ){
+
+      recClass = "rec-open";
+
+    }
+
+    tbody.innerHTML += `
+
+      <tr>
+
+        <td>${r.area}</td>
+
+        <td>${money(r.revenue)}</td>
+
+        <td>${num(r.qty)}</td>
+
+        <td>${money(r.profit)}</td>
+
+        <td>${r.shops}</td>
+
+        <td>${r.vip}</td>
+
+        <td>
+
+          <span class="${recClass}">
+            ${r.recommendation}
+          </span>
+
+        </td>
+
+      </tr>
+
+    `;
+
+  });
 
 }
 
-
-// =====================================
+// ======================================
 // CUSTOMER
-// =====================================
+// ======================================
 
-function renderCustomerTable(data){
+function renderCustomers(rows){
 
-  let html = "";
+  const tbody =
+    document.getElementById(
+      "customerTable"
+    );
 
-  data.forEach(r=>{
+  tbody.innerHTML = "";
 
-    let typeClass =
-      r.type == "VIP"
-      ? "vip"
-      : "general";
+  rows.forEach(r => {
 
-    html += `
+    let riskClass = "risk-low";
+
+    if(r.risk == "High"){
+
+      riskClass = "risk-high";
+
+    }
+    else if(r.risk == "Medium"){
+
+      riskClass = "risk-medium";
+
+    }
+
+    tbody.innerHTML += `
 
       <tr>
 
@@ -689,9 +1126,7 @@ function renderCustomerTable(data){
 
         <td>${r.area}</td>
 
-        <td class="${typeClass}">
-          ${r.type}
-        </td>
+        <td>${r.type}</td>
 
         <td>${money(r.revenue)}</td>
 
@@ -699,53 +1134,18 @@ function renderCustomerTable(data){
 
         <td>${num(r.qty)}</td>
 
-        <td>${num(r.avgQty)}</td>
-
-        <td>${num(r.orders)}</td>
-
-        <td>${r.stainPercent}%</td>
-
-      </tr>
-
-    `;
-
-  });
-
-  document
-    .getElementById("customerTable")
-    .innerHTML = html;
-
-}
-
-
-// =====================================
-// AREA
-// =====================================
-
-function renderAreaTable(data){
-
-  let html = "";
-
-  data.forEach(r=>{
-
-    html += `
-
-      <tr>
-
-        <td>${r.area}</td>
-
-        <td>${money(r.revenue)}</td>
-
-        <td>${num(r.qty)}</td>
-
-        <td>${money(r.profit)}</td>
-
-        <td>${num(r.shops)}</td>
-
-        <td>${num(r.vip)}</td>
+        <td>${r.orders}</td>
 
         <td>
-          ${r.recommendation}
+          ${r.stainPercent || 0}%
+        </td>
+
+        <td>
+
+          <span class="${riskClass}">
+            ${r.risk}
+          </span>
+
         </td>
 
       </tr>
@@ -754,114 +1154,218 @@ function renderAreaTable(data){
 
   });
 
-  document
-    .getElementById("areaTable")
-    .innerHTML = html;
+}
+
+// ======================================
+// INSIGHT
+// ======================================
+
+function renderInsights(data){
+
+  const box =
+    document.getElementById(
+      "smartInsights"
+    );
+
+  box.innerHTML = "";
+
+  // REVENUE
+
+  box.innerHTML += `
+
+    <div class="insight-card">
+
+      <div class="insight-title">
+        💰 Revenue Insight
+      </div>
+
+      Forecast Revenue:
+      <b>${money(data.forecastRevenue)}</b>
+
+      <br><br>
+
+      Avg Revenue/Day:
+      <b>${money(Math.floor(data.avgRevenuePerDay))}</b>
+
+    </div>
+
+  `;
+
+  // DEBT
+
+  let debtColor = "#5cb85c";
+  let debtText = "Healthy";
+
+  if(data.outstandingDebt >= 2000000){
+
+    debtColor = "#d9534f";
+    debtText = "Critical";
+
+  }
+  else if(data.outstandingDebt > 0){
+
+    debtColor = "#f0ad4e";
+    debtText = "Need Follow Up";
+
+  }
+
+  box.innerHTML += `
+
+    <div class="insight-card">
+
+      <div class="insight-title">
+        🧾 Debt Insight
+      </div>
+
+      Outstanding Debt:
+      <b style="color:${debtColor}">
+        ${money(data.outstandingDebt)}
+      </b>
+
+      <br><br>
+
+      Status:
+      <b style="color:${debtColor}">
+        ${debtText}
+      </b>
+
+    </div>
+
+  `;
+
+  // ORDER
+
+  box.innerHTML += `
+
+    <div class="insight-card">
+
+      <div class="insight-title">
+        📦 Order Insight
+      </div>
+
+      Total Orders:
+      <b>${num(data.totalOrders)}</b>
+
+      <br><br>
+
+      Total Qty:
+      <b>${num(data.totalQty)}</b>
+
+    </div>
+
+  `;
+
+  // CUSTOMER
+
+  box.innerHTML += `
+
+    <div class="insight-card">
+
+      <div class="insight-title">
+        👥 Customer Insight
+      </div>
+
+      Active Shops:
+      <b>${num(data.activeShops)}</b>
+
+      <br><br>
+
+      Holding Alert:
+      <b>${num(data.holdingAlert)}</b>
+
+    </div>
+
+  `;
+
+  // LAUNDRY PERFORMANCE
+
+  let laundryColor = "#5cb85c";
+  let laundryStatus = "Excellent";
+  let laundryMessage = "Very Fast Service";
+
+  const laundryTime =
+    Number(data.avgLaundryTime);
+
+  if(laundryTime > 3){
+
+    laundryColor = "#d9534f";
+    laundryStatus = "Bad";
+    laundryMessage =
+      "Too Slow - Affects Competition";
+
+  }
+  else if(laundryTime >= 3){
+
+    laundryColor = "#f0ad4e";
+    laundryStatus = "Not Good";
+    laundryMessage =
+      "Need Faster Operation";
+
+  }
+  else if(laundryTime >= 2){
+
+    laundryColor = "#f0ad4e";
+    laundryStatus = "Good";
+    laundryMessage =
+      "Acceptable Performance";
+
+  }
+  else if(laundryTime >= 1.5){
+
+    laundryColor = "#5bc0de";
+    laundryStatus = "Fast";
+    laundryMessage =
+      "Strong Competitive Speed";
+
+  }
+
+  box.innerHTML += `
+
+    <div class="insight-card">
+
+      <div class="insight-title">
+        🚚 Operation Insight
+      </div>
+
+      Avg Laundry Time:
+      <b style="color:${laundryColor}">
+        ${data.avgLaundryTime} Days
+      </b>
+
+      <br><br>
+
+      Performance:
+      <b style="color:${laundryColor}">
+        ${laundryStatus}
+      </b>
+
+      <br><br>
+
+      ${laundryMessage}
+
+      <br><br>
+
+      Debt Alert:
+      <b>
+        ${num(data.debtAlert)}
+      </b>
+
+    </div>
+
+  `;
 
 }
 
 
-// =====================================
-// UNPAID
-// =====================================
-
-function renderUnpaidTable(data){
-
-  let html = "";
-
-  data.forEach(r=>{
-
-    html += `
-
-      <tr>
-
-        <td>${r.invoiceID}</td>
-
-        <td>${r.customer}</td>
-
-        <td>${r.driverOut}</td>
-
-        <td>${money(r.amount)}</td>
-
-        <td>${num(r.debtDays)} Days</td>
-
-      </tr>
-
-    `;
-
-  });
-
-  document
-    .getElementById("unpaidTable")
-    .innerHTML = html;
-
-}
-
-
-// =====================================
-// LATEST
-// =====================================
-
-function renderLatestOrders(data){
-
-  let html = "";
-
-  data.forEach(r=>{
-
-    let cls = "";
-
-    if(r.status == "Paid"){
-
-      cls = "status-paid";
-
-    }
-    else if(r.status == "Partial"){
-
-      cls = "status-partial";
-
-    }
-    else{
-
-      cls = "status-unpaid";
-
-    }
-
-    html += `
-
-      <tr>
-
-        <td>${r.date}</td>
-
-        <td>${r.shop}</td>
-
-        <td>${r.driver}</td>
-
-        <td>${num(r.qty)}</td>
-
-        <td>${money(r.amount)}</td>
-
-        <td class="${cls}">
-          ${r.status}
-        </td>
-
-      </tr>
-
-    `;
-
-  });
-
-  document
-    .getElementById("latestOrders")
-    .innerHTML = html;
-
-}
-
-
-// =====================================
+// ======================================
 // AUTO LOAD
-// =====================================
+// ======================================
 
-loadDashboard();
+window.onload = function(){
+
+  loadDashboard();
+
+};
 
 </script>
 
