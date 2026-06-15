@@ -270,9 +270,9 @@
             <th>Date</th>
             <th>Shop</th>
             <th>Driver</th>
-            <th>Holding Days</th>
-            <th>Qty</th>
             <th>Amount</th>
+            <th>Qty</th>
+            <th>Holding</th>
             <th>Status</th>
 
           </tr>
@@ -919,10 +919,8 @@ function renderLatestOrders(rows){
         <td>${r.date || ""}</td>
         <td>${r.shop || ""}</td>
         <td>${r.driver || ""}</td>
-        <td>${r.holdingDays || 0}</td>
-        <td>${num(r.qty)}</td>
         <td>${money(r.amount)}</td>
-
+        <td>${num(r.qty)}</td>
         <td>
           <span class="${holdingClass}">
             ${r.holdingDays || 0} Day
