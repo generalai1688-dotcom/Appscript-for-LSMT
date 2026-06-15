@@ -160,6 +160,16 @@
     <p id="totalShops">0</p>
   </div>
 
+  <div class="card">
+    <h3>Current Stock</h3>
+    <p id="currentStock">0</p>
+  </div>
+
+  <div class="card">
+    <h3>Stock > 3 Days</h3>
+    <p id="stockOver3Days">0</p>
+  </div>
+
 </div>
     <!-- ALERT -->
 
@@ -260,6 +270,7 @@
             <th>Date</th>
             <th>Shop</th>
             <th>Driver</th>
+            <th>Holding Days</th>
             <th>Qty</th>
             <th>Amount</th>
             <th>Status</th>
@@ -644,8 +655,18 @@ function renderDashboard(data){
   
   document.getElementById(
   "totalShops"
-).innerText =
+  ).innerText =
   num(data.totalShops);
+
+  document.getElementById(
+  "currentStock"
+  ).innerText =
+  num(data.currentStock || 0);
+
+  document.getElementById(
+  "stockOver3Days"
+  ).innerText =
+  num(data.stockOver3Days || 0);
 
   document.getElementById(
     "holdingAlert"
@@ -860,6 +881,19 @@ function renderLatestOrders(rows){
 
   rows.forEach(r => {
 
+    let holdingClass = "holding-green";
+
+    if(r.holdingDays >= 5){
+
+      holdingClass = "holding-red";
+
+    }
+    else if(r.holdingDays >= 3){
+
+      holdingClass = "holding-orange";
+
+    }
+
     let statusClass =
       "status-unpaid";
 
@@ -883,14 +917,17 @@ function renderLatestOrders(rows){
       <tr>
 
         <td>${r.date || ""}</td>
-
         <td>${r.shop || ""}</td>
-
         <td>${r.driver || ""}</td>
-
+        <td>${r.holdingDays || 0}</td>
         <td>${num(r.qty)}</td>
-
         <td>${money(r.amount)}</td>
+
+        <td>
+          <span class="${holdingClass}">
+            ${r.holdingDays || 0} Day
+          </span>
+        </td>
 
         <td class="${statusClass}">
           ${r.status || ""}

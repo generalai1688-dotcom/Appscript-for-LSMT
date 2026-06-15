@@ -293,6 +293,8 @@ function getDashboardData(
   let areaMap = {};
 
   let latestOrders = [];
+  let currentStock = 0;
+  let stockOver3Days = 0;
   let unpaidInvoices = [];
 
   const uniqueDays =
@@ -731,7 +733,7 @@ if(inDateRange){
       if(holdingDays >= 3){
 
         holdingAlert++;
-
+        
       }
 
     }
@@ -821,9 +823,20 @@ if(inDateRange){
 
     if(
       include &&
-      status != "Paid"
+      !invoiceID
     ){
+      currentStock += qty;
 
+      const holdingDays = Math.floor(
+        (new Date() - orderDate) /
+        (1000 * 60 * 60 * 24)
+      );
+
+    if(holdingDays > 3){
+      stockOver3Days += qty;
+    }
+
+    
       latestOrders.push({
 
         date:
@@ -841,6 +854,7 @@ if(inDateRange){
         shop: customerRaw,
 
         driver: driver,
+        holdingDays: holdingDays,
 
         qty: qty,
 
@@ -941,7 +955,7 @@ else if(stainPercent >= 5){
 
       let recommendation = "Monitor";
 
-      if(data.qty >= 5000){
+      if(data.qty >= 40000){
 
         recommendation =
           "Open Mini Branch";
@@ -1019,7 +1033,8 @@ else if(stainPercent >= 5){
     totalOrders,
 
     totalQty,
-
+    currentStock,
+    stockOver3Days,
     avgRevenuePerDay,
 
     avgQtyPerDay,
@@ -1061,7 +1076,7 @@ else if(stainPercent >= 5){
     latestOrders:
 
       latestOrders
-        .slice(-20)
+        .slice(-50)
         .reverse(),
 
     unpaidInvoices:
@@ -1073,7 +1088,7 @@ else if(stainPercent >= 5){
           - a.debtDays
         )
 
-        .slice(0,20)
+        .slice(0,50)
 
   };
 
@@ -1444,51 +1459,256 @@ function refreshAllSummary(){
 
 function onEdit(e){
 
-  const sheet = e.source.getSheetByName("Order");
+  const sheet = e.range.getSheet();
+  if(sheet.getName() !== "Order") return;
 
-  const range = e.range;
-
-  const row = range.getRow();
-
-  const col = range.getColumn();
-
-  if(sheet.getName() != "Order") return;
-
-  const headers = sheet
-    .getRange(1,1,1,sheet.getLastColumn())
+  const headers = sheet.getRange(1,1,1,sheet.getLastColumn())
     .getValues()[0]
     .map(h => String(h).trim().toLowerCase());
 
-  const paidCol =
-    headers.indexOf("amount paid") + 1;
+  const verifyCol = headers.indexOf("verify payment") + 1;
+  const paymentDateCol = headers.indexOf("payment date") + 1;
+
+  if(verifyCol === 0 || paymentDateCol === 0) return;
+
+  const row = e.range.getRow();
+  const col = e.range.getColumn();
+
+  if(row <= 1) return;
+
+  // ONLY when cashier touches Verify Payment
+  if(col === verifyCol){
+
+    const isVerified = sheet.getRange(row, verifyCol).getValue();
+
+    if(isVerified === true){
+      sheet.getRange(row, paymentDateCol).setValue(new Date());
+    }
+  }
+}
+
+
+
+ function sendCashierAlert() {
+
+  const sheet = SpreadsheetApp
+    .getActive()
+    .getSheetByName("Order");
+
+  const data =
+    sheet.getDataRange().getValues();
+
+  const headers =
+    data[0].map(h =>
+      String(h)
+        .trim()
+        .toLowerCase()
+    );
+
+  // =====================================
+  // TELEGRAM CONFIG
+  // =====================================
+
+  const TOKEN = "8794873393:AAFpmUIuiORqhHskfGqnep99pOf2M0dTpJw";
+  const CHAT_ID = "-5470920581";
+
+  // =====================================
+  // COLUMN INDEX
+  // =====================================
+
+  const invoiceCol =
+    headers.indexOf("invoice id");
+
+  const driverOutCol =
+    headers.indexOf("driver out");
+
+  const amountPaidCol =
+    headers.indexOf("amount paid");
 
   const paymentDateCol =
-    headers.indexOf("payment date") + 1;
+    headers.indexOf("payment date");
 
-  if(
-    col == paidCol
-    &&
-    row > 1
-  ){
+  const statusCol =
+    headers.indexOf("payment status");
 
-    const paidValue =
-      sheet.getRange(row, paidCol).getValue();
+  const verifyCol =
+    headers.indexOf("verify payment");
+  
+  const cashierAlertSentCol =
+    headers.indexOf("cashier alert sent");
 
-    const paymentCell =
-      sheet.getRange(row, paymentDateCol);
+  // =====================================
+  // SAFETY CHECK
+  // =====================================
 
-    if(paidValue && !paymentCell.getValue()){
+  if (
+    invoiceCol === -1 ||
+    driverOutCol === -1 ||
+    amountPaidCol === -1 ||
+    paymentDateCol === -1 ||
+    statusCol === -1 ||
+    verifyCol === -1 ||
+    cashierAlertSentCol === -1
+  ) {
 
-      paymentCell.setValue(new Date());
+    throw new Error(
+      "Column name mismatch in sheet headers"
+    );
 
+  }
+
+  const now = new Date();
+
+  // =====================================
+  // LOOP ALL ROWS
+  // =====================================
+
+  for (let i = 1; i < data.length; i++) {
+
+    const row = data[i];
+
+    const invoiceId =
+      row[invoiceCol];
+
+    const driverOut =
+      row[driverOutCol];
+
+    const amountPaid =
+      Number(row[amountPaidCol]) || 0;
+
+    const paymentDate =
+      row[paymentDateCol];
+
+    const paymentStatus =
+      String(
+        row[statusCol] || ""
+      )
+        .trim()
+        .toLowerCase();
+
+    const verifyPayment =
+      row[verifyCol];
+
+    const cashierAlertSent =
+      row[cashierAlertSentCol];
+
+      Logger.log(
+      invoiceId +
+      " | " +
+      paymentStatus +
+      " | " +
+      verifyPayment +
+      " | " +
+      amountPaid
+    );
+
+    // =====================================
+    // MUST BE PAID
+    // =====================================
+
+    if (paymentStatus !== "paid") {
+      continue;
     }
 
-    if(!paidValue){
+    // =====================================
+    // STOP WHEN VERIFIED
+    // =====================================
 
-      paymentCell.clearContent();
-
+    if (verifyPayment === true) {
+      continue;
     }
+
+    if (cashierAlertSent === true) {
+    continue;
+    }
+
+    // =====================================
+    // NEED PAYMENT DATE
+    // =====================================
+
+    if (!paymentDate) {
+      continue;
+    }
+
+    // =====================================
+    // WAIT 10 MINUTES
+    // =====================================
+
+    const minutesPassed =
+      Math.floor(
+        (
+          now -
+          new Date(paymentDate)
+        ) /
+        (1000 * 60)
+      );
+
+    if (minutesPassed < 10) {
+      continue;
+    }
+
+    // =====================================
+    // FORMAT DATE
+    // =====================================
+
+    const paymentDateText =
+      Utilities.formatDate(
+        new Date(paymentDate),
+        Session.getScriptTimeZone(),
+        "yyyy-MM-dd hh:mm a"
+      );
+
+    // =====================================
+    // MESSAGE
+    // =====================================
+
+    const message =
+`⚠️ UNVERIFIED PAYMENT
+
+Invoice: ${invoiceId}
+Driver: ${driverOut}
+
+Amount Paid: ${amountPaid.toLocaleString()}៛
+Payment Date: ${paymentDateText}
+
+Waiting: ${minutesPassed} minutes
+
+⏰ Please Verify Payment`;
+
+    // =====================================
+    // TELEGRAM SEND
+    // =====================================
+
+    const url =
+      "https://api.telegram.org/bot" +
+      TOKEN +
+      "/sendMessage";
+
+    const response =
+      UrlFetchApp.fetch(
+        url,
+        {
+          method: "post",
+          payload: {
+            chat_id: CHAT_ID,
+            text: message
+          },
+          muteHttpExceptions: true
+        }
+      );
+
+    Logger.log(
+      response.getContentText()
+    );
+
+    sheet
+    .getRange(
+      i + 1,
+      cashierAlertSentCol + 1
+    )
+    .setValue(true);
 
   }
 
 }
+
